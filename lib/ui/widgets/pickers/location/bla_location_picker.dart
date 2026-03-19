@@ -1,28 +1,25 @@
+import 'package:blabla/data/repositories/app_repositories.dart';
+import 'package:blabla/model/ride/locations.dart';
+import 'package:blabla/ui/theme/theme.dart';
 import 'package:blabla/ui/widgets/display/bla_divider.dart';
 import 'package:flutter/material.dart';
 
-import '../../../model/ride/locations.dart';
-import '../../theme/theme.dart';
-
-///
-/// A  Location Picker is a view to pick a Location:
-///
 class BlaLocationPicker extends StatefulWidget {
   const BlaLocationPicker({
     super.key,
     required this.initLocation,
-    required this.locations,
+    required this.appRepositories,
   });
 
-  final Location? initLocation; // optional initial location
-  final List<Location> locations;
+  final Location? initLocation;
+  final AppRepositories appRepositories;
 
   @override
   State<BlaLocationPicker> createState() => _BlaLocationPickerState();
 }
 
 class _BlaLocationPickerState extends State<BlaLocationPicker> {
-  String currentSearchText = "";
+  String searchText = "";
 
   void onTap(Location location) {
     Navigator.pop<Location>(context, location);
@@ -37,25 +34,25 @@ class _BlaLocationPickerState extends State<BlaLocationPicker> {
     super.initState();
 
     if (widget.initLocation != null) {
-      currentSearchText = widget.initLocation!.name;
+      searchText = widget.initLocation!.name;
     }
   }
 
   void onSearchChanged(String search) {
     setState(() {
-      currentSearchText = search;
+      searchText = search;
     });
   }
 
   List<Location> get filteredLocation {
-    if (currentSearchText.length < 2) {
+    if (searchText.length < 2) {
       return [];
     }
-    return widget.locations
+    final query = searchText.toLowerCase();
+
+    return widget.appRepositories.locationRepository.availableLocations
         .where(
-          (location) => location.name.toUpperCase().contains(
-            currentSearchText.toUpperCase(),
-          ),
+          (location) => location.name.toLowerCase().contains(query),
         )
         .toList();
   }
@@ -72,7 +69,7 @@ class _BlaLocationPickerState extends State<BlaLocationPicker> {
         child: Column(
           children: [
             LocationSearchBar(
-              initSearch: currentSearchText,
+              initSearch: searchText,
               onBackTap: onBackTap,
               onSearchChanged: onSearchChanged,
             ),
@@ -174,7 +171,7 @@ class _LocationSearchBarState extends State<LocationSearchBar> {
                   onPressed: onClearTap,
                   icon: Icon(Icons.close, color: BlaColors.iconLight, size: 16),
                 )
-              : SizedBox.shrink(), // Hides the icon if text field is empty
+              : const SizedBox.shrink(), // Hides the icon if text field is empty
         ],
       ),
     );
@@ -212,7 +209,7 @@ class LocationTile extends StatelessWidget {
             size: 16,
           ),
         ),
-        BlaDivider(),
+        const BlaDivider(),
       ],
     );
   }

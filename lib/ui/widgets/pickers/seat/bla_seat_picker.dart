@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/theme.dart';
-import '../buttons/bla_circle_button.dart';
-import '../buttons/bla_icon_button.dart';
+import 'package:blabla/ui/theme/theme.dart';
+import 'package:blabla/ui/widgets/buttons/bla_circle_button.dart';
+import 'package:blabla/ui/widgets/buttons/bla_icon_button.dart';
 
 class BlaSeatPicker extends StatefulWidget {
   const BlaSeatPicker({super.key, this.initSeats, required this.maxSeat});
@@ -26,7 +26,7 @@ class _BlaSeatPickerState extends State<BlaSeatPicker> {
   }
 
   void onMinus() {
-    if (selectedSeat >1) {
+    if (selectedSeat > 1) {
       setState(() => selectedSeat--);
     }
   }
@@ -54,17 +54,14 @@ class _BlaSeatPickerState extends State<BlaSeatPicker> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Back icon
             BlaIconButton(onPressed: onBackTap, icon: Icons.close),
-            SizedBox(height: BlaSpacings.m),
+            const SizedBox(height: BlaSpacings.m),
 
-            // Title
             Text(
               "Number of seats to book",
               style: BlaTextStyles.title.copyWith(color: BlaColors.textNormal),
             ),
 
-            // Form
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -85,13 +82,13 @@ class _BlaSeatPickerState extends State<BlaSeatPicker> {
                 BlaCircleButton(
                   icon: Icons.add,
                   type: CircleButtonType.secondary,
-                   disabled: plusDisabled,
+                  disabled: plusDisabled,
                   onPressed: onPlus,
                 ),
               ],
             ),
 
-            Spacer(flex: 1),
+            const Spacer(),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

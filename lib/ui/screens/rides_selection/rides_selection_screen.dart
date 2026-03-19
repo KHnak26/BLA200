@@ -4,7 +4,7 @@ import '../../../model/ride/ride.dart';
 import '../../../model/ride_pref/ride_pref.dart';
 import '../../../utils/animations_util.dart' show AnimationUtils;
 import '../../theme/theme.dart';
-import 'widgets/ride_preference_modal.dart';
+import '../../widgets/pickers/location/bla_ride_preference_modal.dart';
 import 'widgets/rides_selection_header.dart';
 import 'widgets/rides_selection_tile.dart';
 

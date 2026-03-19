@@ -1,26 +1,18 @@
+import 'package:blabla/data/repositories/app_repositories.dart';
+import 'package:blabla/model/ride/locations.dart';
+import 'package:blabla/model/ride_pref/ride_pref.dart';
+import 'package:blabla/ui/theme/theme.dart';
 import 'package:blabla/ui/widgets/buttons/bla_button.dart';
+import 'package:blabla/ui/widgets/buttons/bla_icon_button.dart';
 import 'package:blabla/ui/widgets/display/bla_divider.dart';
+import 'package:blabla/ui/widgets/pickers/location/bla_location_picker.dart';
+import 'package:blabla/ui/widgets/pickers/seat/bla_seat_picker.dart';
+import 'package:blabla/utils/animations_util.dart';
+import 'package:blabla/utils/date_time_utils.dart';
 import 'package:flutter/material.dart';
 
-import '../../../data/repositories/app_repositories.dart';
-import '../../../model/ride/locations.dart';
-import '../../../model/ride_pref/ride_pref.dart';
-import '../../../utils/animations_util.dart';
-import '../../../utils/date_time_utils.dart';
-import '../../theme/theme.dart';
-import '../buttons/bla_icon_button.dart';
-import 'bla_location_picker.dart';
-import 'bla_seat_picker.dart';
-
-///
-/// A  RidePreference Picker is a view to pick a RidePreference:
-///   - A depcarture location
-///   - An arrival location
-///   - A date
-///   - A number of seats
-///
 class BlaRidePreferencePicker extends StatefulWidget {
-  final RidePreference? initRidePreference; // optional initial preference.
+  final RidePreference? initRidePreference;
 
   const BlaRidePreferencePicker({
     super.key,
@@ -43,9 +35,6 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
   Location? arrival;
   late int requestedSeats;
 
-  // ----------------------------------
-  // Initialize the Form attributes
-  // ----------------------------------
   @override
   void initState() {
     super.initState();
@@ -74,19 +63,19 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
     }
   }
 
-  // ----------------------------------
-  // Handle events
-  // ----------------------------------
-
-  void onDeparturePressed() async {
-    Location? selectedLocation = await Navigator.of(context).push<Location>(
+  Future<Location?> _pickLocation(Location? initialLocation) {
+    return Navigator.of(context).push<Location>(
       AnimationUtils.createBottomToTopRoute(
         BlaLocationPicker(
-          initLocation: departure,
-          locations: widget.appRepositories.locationRepository.availableLocations,
+          initLocation: initialLocation,
+          appRepositories: widget.appRepositories,
         ),
       ),
     );
+  }
+
+  void onDeparturePressed() async {
+    Location? selectedLocation = await _pickLocation(departure);
 
     if (selectedLocation != null) {
       setState(() {
@@ -96,14 +85,7 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
   }
 
   void onArrivalPressed() async {
-    Location? selectedLocation = await Navigator.of(context).push<Location>(
-      AnimationUtils.createBottomToTopRoute(
-        BlaLocationPicker(
-          initLocation: arrival,
-          locations: widget.appRepositories.locationRepository.availableLocations,
-        ),
-      ),
-    );
+    Location? selectedLocation = await _pickLocation(arrival);
 
     if (selectedLocation != null) {
       setState(() {
@@ -132,12 +114,8 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
     }
   }
 
-  void onSearch() async {
-    bool hasDeparture = departure != null;
-    bool hasArrival = arrival != null;
-
-    bool preferenceIsValid = hasArrival && hasDeparture;
-    if (!preferenceIsValid) return;
+  void onSearch() {
+    if (departure == null || arrival == null) return;
 
     RidePreference newPreference = RidePreference(
       departure: departure!,
@@ -159,9 +137,6 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
     });
   }
 
-  // ----------------------------------
-  // Compute the widgets rendering
-  // ----------------------------------
   String get departureLabel =>
       departure != null ? departure!.name : "Leaving from";
   String get arrivalLabel => arrival != null ? arrival!.name : "Going to";
@@ -174,9 +149,6 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
 
   bool get switchVisible => arrival != null || departure != null;
 
-  // ----------------------------------
-  // Build the widgets
-  // ----------------------------------
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -188,7 +160,7 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
           child: Column(
             children: [
               RidePrefInput(
-                isPlaceHolder: showDeparturePlaceholder,
+                isPlaceholder: showDeparturePlaceholder,
                 title: departureLabel,
                 leftIcon: Icons.location_on,
                 onPressed: onDeparturePressed,
@@ -200,7 +172,7 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
               const BlaDivider(),
 
               RidePrefInput(
-                isPlaceHolder: showArrivalPlaceholder,
+                isPlaceholder: showArrivalPlaceholder,
                 title: arrivalLabel,
                 leftIcon: Icons.location_on,
                 onPressed: onArrivalPressed,
@@ -210,7 +182,7 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
               RidePrefInput(
                 title: dateLabel,
                 leftIcon: Icons.calendar_month,
-                onPressed: () => {},
+                onPressed: null,
               ),
               const BlaDivider(),
 
@@ -231,28 +203,26 @@ class _BlaRidePreferencePickerState extends State<BlaRidePreferencePicker> {
 
 class RidePrefInput extends StatelessWidget {
   final String title;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final IconData leftIcon;
 
-  // If true the text is displayed ligher
-  final bool isPlaceHolder;
+  final bool isPlaceholder;
 
-  // A right button can be optionally provided
   final IconData? rightIcon;
   final VoidCallback? onRightIconPressed;
 
   const RidePrefInput({
     super.key,
     required this.title,
-    required this.onPressed,
+    this.onPressed,
     required this.leftIcon,
-    this.rightIcon, //   optional
-    this.onRightIconPressed, //   optional
-    this.isPlaceHolder = false,
+    this.rightIcon,
+    this.onRightIconPressed,
+    this.isPlaceholder = false,
   });
 
   Color get textColor =>
-      isPlaceHolder ? BlaColors.textLight : BlaColors.textNormal;
+      isPlaceholder ? BlaColors.textLight : BlaColors.textNormal;
 
   @override
   Widget build(BuildContext context) {
